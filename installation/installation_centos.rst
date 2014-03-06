@@ -1,27 +1,32 @@
-Step by step installation on developement workstation
-=====================================================
+Step by step server installation
+================================
 
-This document provides a step by step instruction to install the PIM on development workstations based on CENTOS 6
-
+This document provides a step by step instruction to install the PIM on servers based on CENTOS 6
 
 
 Prerequisite
 -------------
+
 In order to install Akeneo, you will have to download the Akeneo PIM Standard Edition archive file from http://www.akeneo.com/download/
+You can also use an archive supplied by your integrator.
 
+An akeneo user and an akeneo group must be created to run crontabs and PIM commands. 
 
-System installation
--------------------
+By convention, all commands preceded by a # should be issued with root, and all commands preceded by a $ should be 
+issued with the akeneo user.
+
 
 Configure EPEL and IUS
 ----------------------
 
+
 .. code-block:: bash 
     :linenos:
+
     $ wget http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/epel-release-6-5.noarch.rpm 
     $ wget http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-11.ius.centos6.noarch.rpm
-    $ sudo rpm -i epel-release-6-5.noarch.rpm
-    $ sudo rpm -i ius-release-1.0-11.ius.centos6.noarch.rpm
+    # rpm -i epel-release-6-5.noarch.rpm
+    # rpm -i ius-release-1.0-11.ius.centos6.noarch.rpm
     
 
 Installing MySQL
@@ -31,8 +36,9 @@ Installing MySQL
 .. code-block:: bash
     :linenos:
 
-    $ sudo yum install mysql-server
-    $ sudo chkconfig mysql-server on
+    # yum install mysql-server
+    # chkconfig mysql-server on
+
 
 Installing Apache
 *****************
@@ -41,8 +47,8 @@ Installing Apache
 .. code-block:: bash 
     :linenos:
 
-    $ sudo yum install httpd
-    $ chkconfig httpd on
+    # yum install httpd
+    # chkconfig httpd on
 
 Installing PHP
 **************
@@ -50,14 +56,15 @@ Installing PHP
 
 .. code-block:: bash 
     :linenos:
-    $ sudo yum install php54
-    $ sudo yum install php54-gd
-    $ sudo yum install php54-mysql
-    $ sudo yum install php54-intl
-    $ sudo yum install php54-mcrypt
-    $ sudo yum install php54-soap
-    $ sudo yum install php54-xml
-    $ sudo yum install java-1.7.0-openjdk 
+
+    # yum install php54
+    # yum install php54-gd
+    # yum install php54-mysql
+    # yum install php54-intl
+    # yum install php54-mcrypt
+    # yum install php54-soap
+    # yum install php54-xml
+    # yum install java-1.7.0-openjdk 
 
 
 Installing Java
@@ -66,7 +73,7 @@ Installing Java
 .. code-block:: bash
     :linenos:
 
-    $ sudo yum install java-1.7.0-openjdk 
+    # yum install java-1.7.0-openjdk 
 
 
 Installing PHP opcode and data cache
@@ -75,7 +82,7 @@ Installing PHP opcode and data cache
 .. code-block:: bash 
     :linenos:
 
-    $ sudo yum install php54-pecl-apc
+    # yum install php54-pecl-apc
 
 
 System configuration
@@ -102,7 +109,7 @@ PHP
 .. code-block:: bash 
     :linenos:
 
-    $ sudo gedit /etc/php.ini
+    # vi /etc/php.ini
     memory_limit = 256M
     date.timezone = Etc/UTC
 
@@ -112,8 +119,8 @@ PHP
 .. code-block:: bash 
     :linenos:
 
-    $ sudo cp /etc/php.ini /etc/php-cli.ini
-    $ sudo gedit /etc/php-cli.ini
+    # cp /etc/php.ini /etc/php-cli.ini
+    # vi /etc/php-cli.ini
     memory_limit = 768M
     date.timezone = Etc/UTC
 
@@ -123,42 +130,28 @@ PHP
 
 Apache
 ******
-To avoid spending too much time on rights problems between the installing user and the Apache user, an easy configuration
+To avoid spending too much time on rights problems between the akeneo user and the Apache user, an easy configuration
 is to use same user for both processes.
 
 
-Get your identifiers
-^^^^^^^^^^^^^^^^^^^^
-**Ubuntu 12.10 & 13.10**
-
-.. code-block:: bash 
-    :linenos:
-
-    $ id
-    uid=1000(my_user), gid=1000(my_group), ...
-
-In this example, the user is *my_user* and the group is *my_group*.
-
 Use your identifiers for Apache
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-**Ubuntu 12.10 & 13.10**
 
 .. code-block:: bash 
     :linenos:
 
-    $ sudo service httpd stop
-    $ sudo gedit /etc/httpd/conf/httpd.conf
-    User my_user
-    Group my_group
+    # service httpd stop
+    # vi /etc/httpd/conf/httpd.conf
+    User akeneo
+    Group akeneo
 
-
-Start Apache
-^^^^^^^^^^^^
+Change permissions for PHP session files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash 
     :linenos:
 
-    $ sudo service httpd start
+    # chown -R akeneo:akeneo /var/lib/php/session
 
 
 Installing Akeneo PIM
@@ -196,29 +189,17 @@ Installing Akeneo
 
 Configuring the virtualhost
 ---------------------------
-Enabling Apache mod_rewrite
-***************************
-**Ubuntu 12.10 & Ubuntu 13.10**
 
-.. code-block:: bash 
+Add a vhost to your Apache config
+*********************************
+
+
+Adapt and add the following content to your /etc/httpd/conf/httpd.conf file
+
+.. code-block:: bash
     :linenos:
 
-    $ sudo a2enmod rewrite
-
-Creating the vhost file
-***********************
-**Ubuntu 12.10**
-
-.. code-block:: bash 
-    :linenos:
-
-    $ sudo gedit /etc/apache2/sites-available/akeneo-pim.local
-
-**Ubuntu 12.10**
-
-.. code-block:: apache
-    :linenos:
-   
+    NameVirtualHost *:80
     <VirtualHost *:80>
         ServerName akeneo-pim.local
 
@@ -229,75 +210,30 @@ Creating the vhost file
             Order allow,deny
             allow from all
         </Directory>
-        ErrorLog ${APACHE_LOG_DIR}/akeneo-pim_error.log
+        ErrorLog /var/log/httpd/akeneo-pim_error.log
 
         LogLevel warn
-        CustomLog ${APACHE_LOG_DIR}/akeneo-pim_access.log combined
+        CustomLog /var/log/httpd/akeneo-pim_access.log combined
     </VirtualHost>
 
-**Ubuntu 13.10**
+
+
+Restart Apache
+**************
+
 
 .. code-block:: bash 
     :linenos:
 
-    $ sudo gedit /etc/apache2/sites-available/akeneo-pim.local.conf
+    # service httpd restart
 
 
-**Ubuntu 13.10**
+Configuring the crontab
+***********************
 
-.. code-block:: apache
-    :linenos:
-   
-    <VirtualHost *:80>
-        ServerName akeneo-pim.local
-
-        DocumentRoot /path/to/pim/root/web/
-        <Directory /path/to/pim/root/web/>
-            Options Indexes FollowSymLinks MultiViews
-            AllowOverride All
-            Require all granted
-        </Directory>
-        ErrorLog ${APACHE_LOG_DIR}/akeneo-pim_error.log
-
-        LogLevel warn
-        CustomLog ${APACHE_LOG_DIR}/akeneo-pim_access.log combined
-    </VirtualHost>
-
-.. note::
-
-    The difference in Virtual Host configuration between Ubuntu 12.10
-    and Ubuntu 13.10 is the result of the switch from Apache 2.2 to
-    Apache 2.4. See https://httpd.apache.org/docs/2.4/upgrading.html
-    for more explanation.
-
-Enabling the virtualhost
-************************
-**Ubuntu 12.10 & Ubuntu 13.10**
-
-.. code-block:: bash
-    :linenos:
-
-    $ sudo a2ensite akeneo-pim.local
-    $ sudo apache2ctl -t
-    $ sudo service apache2 restart
-
-
-Adding the vhost name
-*********************
-**Ubuntu 12.10 & 13.10**
 
 .. code-block:: bash 
     :linenos:
 
-    $ sudo gedit /etc/hosts
-    127.0.0.1    akeneo-pim.local
-
-Testing your installation
--------------------------
-Go to http://akeneo-pim.local/ and log in with admin/admin.
-
-If you can see the dashboard, congratulations, you have successfully installed Akeneo PIM !
-
-You can as well access the dev environment on http://akeneo-pim.local/app_dev.php
-
-If you have an error, it means that something went wrong in a previous step. So please check all error output of all instructions.
+    $ crontab -e
+    0 * * * *  /usr/bin/php /path/to/pim/root/app/console pim:completeness:calculate
