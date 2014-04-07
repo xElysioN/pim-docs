@@ -5,7 +5,11 @@ How to Use a Custom Entity as an Attribute Type
     The code inside this cookbook entry is visible in src directory, you can clone pim-dev then do a symlink and install
 
 .. note::
-    The code inside this cookbook entry requires you to install the `akeneo/custom-entity-bundle`_ package.
+    The code inside this cookbook entry requires you to install the 
+    `akeneo/custom-entity-bundle <https://packagist.org/packages/akeneo/custom-entity-bundle>`_ package.
+    Full documentation for the bundle is available in its 
+    `Github repository <https://github.com/akeneo/CustomEntityBundle/blob/master/Resources/doc/index.rst>`_.
+
 
 Overriding the Product Value to Link it to the Custom Entity
 ------------------------------------------------------------

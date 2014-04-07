@@ -5,7 +5,11 @@ How to Create a Custom Entity and the Screens to Manage it
     The code inside this cookbook entry is visible in src directory, you can clone pim-dev then do a symlink and install
 
 .. note::
-    The code inside this cookbook entry requires you to install the `akeneo/custom-entity-bundle`_ package.
+    The code inside this cookbook entry requires you to install the 
+    `akeneo/custom-entity-bundle <https://packagist.org/packages/akeneo/custom-entity-bundle>`_ package.
+    Full documentation for the bundle is available in its 
+    `Github repository <https://github.com/akeneo/CustomEntityBundle/blob/master/Resources/doc/index.rst>`_.
+
 
 Creating the Entity
 -------------------
@@ -68,5 +72,3 @@ If some vendors are manually added to the database, the pagination will be visib
 
 .. note::
    Have a look at the Cookbook recipe "How to add an menu entry" to add your own link in the menu to this grid.
-
-.. _`akeneo/custom-entity-bundle`: https://packagist.org/packages/akeneo/custom-entity-bundle
