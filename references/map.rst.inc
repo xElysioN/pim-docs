@@ -1,3 +1,2 @@
-* Basic
-    * :doc:`/references/basic/technical_entities`
+* :doc:`/references/basic/technical_entities`
 
