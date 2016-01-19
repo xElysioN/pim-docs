@@ -1,5 +1,5 @@
-3 representative catalogs
--------------------------
+Audit with 3 Representative Catalogs
+====================================
 
 We've audited the application with 3 different catalogs, the data sets are available here https://github.com/akeneo/catalogs/tree/1.4
 
