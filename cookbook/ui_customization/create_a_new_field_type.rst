@@ -81,66 +81,73 @@ Now that we have a field provider, we can create the field itself:
 .. code-block:: javascript
     :linenos:
 
-    'use strict';
-
     /*
-     * src/Acme/Bundle/CustomBundle/Resources/public/js/product/field/range-field.js
+     * src/view/product/field/range.tsx
      */
-    define([
-            'pim/field',
-            'underscore',
-            'text!acme/template/product/field/range'
-        ], function (
-            Field,
-            _,
-            fieldTemplate
-        ) {
-            return Field.extend({
-                fieldTemplate: _.template(fieldTemplate),
-                events: {
-                    'change .field-input:first input[type="range"]': 'updateModel'
-                },
-                renderInput: function (context) {
-                    return this.fieldTemplate(context);
-                },
-                updateModel: function () {
-                    var data = this.$('.field-input:first input[type="range"]').val();
+    import * as React from 'react';
+    import { Value } from 'pim/model/product/value';
+    import { Attribute } from 'pim/model/catalog/attribute';
 
-                    this.setCurrentValue(data);
-                }
-            });
-        }
-    );
+    export default (
+      { value, attribute, onFieldChange }:
+      { value: Value, attribute: Attribute, onFieldChange: any }
+    ) => {
+      return <input type="range" min={attribute.number_min} max={attribute.number_max} value={ value.data || '' }
+        onChange={ (event: any) => { fieldChanged(event, onFieldChange, value, attribute) }  }
+        data-field={ attribute.code }
+        data-locale={ value.locale }
+        data-scope={ value.scope }
+      />;
+    }
 
-And its template:
+    const fieldChanged = (event: any, onFieldChange: any, value: Value, attribute: Attribute) => {
+      const data = event.currentTarget.value;
 
-.. code-block:: html
+      onFieldChange(Object.assign({}, value, {data}), attribute);
+    }
+
+You can now register this file into your module configuration:
+
+.. code-block:: json
     :linenos:
 
-    <!-- src/Acme/Bundle/CustomBundle/Resources/public/templates/product/field/range.html -->
-    <input type="range" data-locale="<%= value.locale %>" data-scope="<%= value.scope %>" value="<%= value.data %>" <%= editMode === 'view' ? 'disabled' : '' %> min="<%= attribute.number_min %>" max="<%= attribute.number_max %>"/>
+    // src/config/modules.json
+    {
+      "view/product/field/range": "acme/view/product/field/range"
+    }
 
-You can now register this module into your requirejs configuration:
+Next you can register the module into the view configuration file:
 
-.. code-block:: yaml
+.. code-block:: json
     :linenos:
 
-    # Acme/Bundle/CustomBundle/Resources/config/requirejs.yml
+    // src/config/views.json
+    [
+      {
+        "code": "acme/product/edit/tabs/attributes/field/range",
+        "view": "view/product/field/range",
+        "parent": "pim/product/edit/tabs/attributes/fields/field",
+        "section": "fields",
+        "attribute_type": "acme-range-field"
+      }
+    ]
 
-    config:
-        paths:
-            acme/range-field: acmecustom/js/product/field/range-field
+Now you need to declare those files in your package.json:
 
-            acme/template/product/field/range: acmecustom/templates/product/field/range.html
-
-Then, last operation, match the field type (`acme-range-field`) with the requirejs module (`acme/range-field`):
-
-.. code-block:: yaml
+.. code-block:: json
     :linenos:
 
-    # Acme/Bundle/CustomBundle/Resources/config/form_extensions.yml
+    "akeneo-pim": {
+      "views": "src/config/views.json",
+      "modules-mapping": "src/config/modules.json"
+    }
 
-    attribute_fields:
-        acme-range-field: acme/range-field
+Once you have done that you can recompile the configuration:
 
-After a cache clear, you can set the min and max value of any number attribute to start to use this new custom field!
+.. code-block:: bash
+    :linenos:
+
+    node ./node_modules/.bin/pim-discover-modules
+    node ./node_modules/.bin/pim-compile-modules
+
+You can now relaunch your webpack server and reload the product edit page.
